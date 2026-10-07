@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>나만의 음료 만들기</title>
+<style>
+@font-face {
+  font-family: 'Mango';
+  src: local('MangoDdobak-B'), local('Mango Ddobak'), url('MangoDdobak-B.ttf') format('truetype');
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+:root {
+  --ch: 520px;
+  --main: #c3e7df;
+  --side: #9ec9c4;
+  --accent: #66c1b3;
+  --deep: #3f8f7e;
+  --ink: #4b3b3b;
+  --cream: #f8f1cc;
+}
+html, body { margin: 0; }
+body {
+  display: flex;
+  flex-wrap: wrap;
+  min-height: 100vh;
+  font-family: 'Mango', 'Malgun Gothic', sans-serif;
+  color: var(--ink);
+  overflow-x: hidden;
+}
+
+.main {
+  position: relative;
+  flex: 1 1 550px;
+  min-height: 760px;
+  background: var(--main);
+  overflow: hidden;
+  transition: background .4s;
+}
+#titletext {
+  position: absolute;
+  left: 36px;
+  top: 34px;
+  margin: 0;
+  max-width: 62%;
+  font-size: 56px;
+  font-weight: normal;
+  line-height: 1.15;
+  color: var(--cream);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  z-index: 6;
+}
+
+.wrap {
+  position: absolute;
+  right: 9%;
+  bottom: 0;
+  height: var(--ch);
+  width: calc(var(--ch) * .545);
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity .4s ease, transform .4s ease;
+}
+.wrap.show { opacity: 1; transform: none; }
+.cup {
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,.4);
+  transition: clip-path .25s ease;
+}
+/* 세 컵 모두 꼭짓점 12개로 맞춰야 clip-path 전환이 됨 */
+.s1 .cup { clip-path: polygon(0 0, 100% 0, 100% 85%, 100% 85%, 100% 95%, 100% 95%, 100% 100%, 0 100%, 0 95%, 0 95%, 0 85%, 0 85%); }
+.s2 .cup { clip-path: polygon(0 0, 100% 0, 91.075% 85%, 91.075% 85%, 90.025% 95%, 90.025% 95%, 89.5% 100%, 10.5% 100%, 9.975% 95%, 9.975% 95%, 8.925% 85%, 8.925% 85%); }
+.s3 .cup { clip-path: polygon(0 0, 100% 0, 83% 85%, 62% 85%, 62% 95%, 85% 95%, 85% 100%, 15% 100%, 15% 95%, 39% 95%, 39% 85%, 17% 85%); }
+.inner {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  transition: height .25s ease;
+}
+.s3 .inner { height: 85%; }
+.liquid {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 85%;
+  transition: height .25s;
+}
+.strawIn {
+  position: absolute;
+  left: 19.25%;
+  top: 0;
+  width: 11.5%;
+  height: 115%;
+  background: #bdf2f6;
+  opacity: .85;
+  transform: rotate(-10deg);
+  transform-origin: 50% 0;
+  filter: blur(calc(var(--ch) * .007));
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 35%);
+  mask-image: linear-gradient(180deg, transparent, #000 35%);
+  z-index: 1;
+}
+.creamIn {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 94%;
+  height: 0;
+  transform: translateX(-50%);
+  background: #f5edcf;
+  border-radius: 50%;
+  filter: blur(calc(var(--ch) * .016));
+  -webkit-mask-image: linear-gradient(180deg, #000 50%, transparent);
+  mask-image: linear-gradient(180deg, #000 50%, transparent);
+  z-index: 2;
+  transition: height .25s, top .25s, width .25s;
+}
+.stuff {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 85%;
+  z-index: 4;
+  transition: height .25s;
+}
+.stuff > div { position: absolute; display: none; }
+.ice {
+  width: 37%;
+  aspect-ratio: 1;
+  background: #fff;
+  border-radius: 14%;
+  filter: blur(calc(var(--ch) * .009));
+}
+.pearl {
+  width: calc(var(--ch) * .060);
+  height: calc(var(--ch) * .060);
+  filter: blur(calc(var(--ch) * .006));
+  border-radius: 50%;
+  background: #54403f;
+}
+.jelly {
+  width: calc(var(--ch) * .1);
+  height: calc(var(--ch) * .08);
+  filter: blur(calc(var(--ch) * .006));
+  border-radius: 25%;
+  background: #f5f1a0;
+}
+.strawOut {
+  position: absolute;
+  left: 19.25%;
+  bottom: 100%;
+  width: 11.5%;
+  height: 35%;
+  background: #bdf2f6;
+  transform: rotate(-10deg);
+  transform-origin: 50% 100%;
+  z-index: 1;
+}
+.whip {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  width: 94%;
+  height: 16%;
+  transform: translateX(-50%);
+  background: #f5edcf;
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  overflow: hidden;
+  z-index: 2;
+  transition: height .25s, bottom .25s, width .25s;
+}
+.syrup {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(130deg, transparent 0 calc(var(--ch) * .04), #6b4040 calc(var(--ch) * .04) calc(var(--ch) * .064));
+  display: none;
+}
+.crumb {
+  position: absolute;
+  width: calc(var(--ch) * .016);
+  height: calc(var(--ch) * .012);
+  border-radius: 15%;
+  display: none;
+}
+.topbox {
+  position: absolute;
+  left: 50%;
+  bottom: 99%;
+  width: 62%;
+  height: 0;
+  transform: translateX(-50%);
+  z-index: 3;
+  transition: bottom .25s;
+}
+.cherry {
+  position: absolute;
+  left: 35%;
+  bottom: 0;
+  width: calc(var(--ch) * .13);
+  height: calc(var(--ch) * .13);
+  border-radius: 50%;
+  background: #ec7070;
+  display: none;
+}
+.cherry::before {
+  content: "";
+  position: absolute;
+  left: 55%;
+  bottom: 70%;
+  width: calc(var(--ch) * .012);
+  height: calc(var(--ch) * .09);
+  background: #d65f5f;
+  border-radius: 99px;
+  transform: rotate(22deg);
+  transform-origin: bottom;
+}
+.mint {
+  position: absolute;
+  left: 20%;
+  bottom: calc(var(--ch) * -.012);
+  width: calc(var(--ch) * .20);
+  height: calc(var(--ch) * .12);
+  background: #7fe6a0;
+  border-radius: 100% 0 100% 0;
+  transform: rotate(-22deg);
+  display: none;
+}
+
+.side {
+  flex: 1 1 550px;
+  min-height: 640px;
+  display: flex;
+  justify-content: center;
+  background: var(--side);
+  transition: background .4s;
+}
+.panel {
+  flex: 0 1 480px;
+  margin: 0 24px;
+  background: #fff;
+  padding: 40px 44px;
+  display: flex;
+  flex-direction: column;
+  min-height: 950px;
+}
+#step1:not([hidden]), #step2:not([hidden]) { animation: fadeUp .35s ease both; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+#step1 {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 56px;
+}
+#step1 p {
+  margin: 0;
+  font-size: 22px;
+  text-align: center;
+}
+.cups {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  width: 100%;
+}
+.pick {
+  width: 84px;
+  height: 160px;
+  border: 0;
+  padding: 0;
+  background: #d6e6e3;
+  cursor: pointer;
+  transition: background .2s;
+}
+.p1 { width: 72px; }
+.pick:hover { background: var(--main); }
+.p2 { clip-path: polygon(0 0, 100% 0, 89.5% 100%, 10.5% 100%); }
+.p3 { clip-path: polygon(0 0, 100% 0, 83% 85%, 62% 85%, 62% 95%, 85% 95%, 85% 100%, 15% 100%, 15% 95%, 39% 95%, 39% 85%, 17% 85%); }
+
+.lt {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+  font-size: 18px;
+}
+.lt span { white-space: nowrap; }
+.lt small {
+  font-size: 14px;
+  color: var(--deep);
+}
+input[type=text] {
+  width: 100%;
+  height: 54px;
+  border: 3px solid var(--main);
+  border-radius: 14px;
+  padding: 0 16px;
+  font: inherit;
+  font-size: 18px;
+  color: var(--ink);
+  outline: none;
+  transition: border-color .3s;
+}
+input[type=text]:focus { border-color: var(--accent); }
+.colors {
+  display: flex;
+  gap: 4%;
+  margin-top: 28px;
+}
+.colors > div:first-child { width: 52%; }
+.colors > div:last-child { width: 44%; }
+input[type=color] {
+  display: block;
+  width: 100%;
+  height: 50px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+input[type=color]::-webkit-color-swatch-wrapper { padding: 0; }
+input[type=color]::-webkit-color-swatch { border: 0; }
+input[type=color]::-moz-color-swatch { border: 0; }
+.slider { margin-top: 22px; }
+input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 10px;
+  border-radius: 99px;
+  background: #d6d6d6;
+  outline: none;
+  margin: 10px 0 0;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 0;
+  cursor: pointer;
+}
+input[type=range]::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 0;
+  cursor: pointer;
+}
+.toppingTitle {
+  margin-top: 32px;
+  font-size: 18px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px 0;
+  margin-top: 10px;
+}
+.tp {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  font-size: 14px;
+}
+.tp input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.ic {
+  width: 84px;
+  height: 84px;
+  padding: 10px;
+  border-radius: 16px;
+  transition: background .2s;
+}
+.ic svg { width: 100%; height: 100%; display: block; }
+.tp input:checked + .ic { background: var(--main); }
+.tp input:checked ~ span { color: var(--deep); }
+.again {
+  display: block;
+  margin: 24px auto 8px;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 15px;
+  color: var(--deep);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+@media (min-width: 1120px) {
+  .main, .side { min-height: 100vh; }
+}
+@media (max-width: 480px) {
+  :root { --ch: 430px; }
+  .main { min-height: 640px; }
+  #titletext { left: 24px; top: 26px; font-size: 44px; }
+  .panel { margin: 0 12px; padding: 32px 24px; }
+  .ic { width: 72px; height: 72px; }
+}
+</style>
+</head>
+<body>
+
+<div class="main">
+  <h1 id="titletext"></h1>
+
+  <div class="wrap s1" id="cupwrap">
+    <div class="strawOut"></div>
+    <div class="cup">
+      <div class="inner">
+        <div class="liquid" id="liquid"></div>
+        <div class="strawIn"></div>
+        <div class="creamIn" id="creamIn"></div>
+        <div class="stuff" id="stuff"></div>
+      </div>
+    </div>
+    <div class="whip" id="whip"><div class="syrup" id="syrup"></div></div>
+    <div class="topbox" id="topbox">
+      <div class="mint" id="mint"></div>
+      <div class="cherry" id="cherry"></div>
+    </div>
+  </div>
+</div>
+
+<div class="side">
+  <div class="panel">
+
+    <div id="step1">
+      <p>만들 음료의 컵 모양을 골라주세요.</p>
+      <div class="cups">
+        <button class="pick p1" id="pick1"></button>
+        <button class="pick p2" id="pick2"></button>
+        <button class="pick p3" id="pick3"></button>
+      </div>
+    </div>
+
+    <div id="step2" hidden>
+      <div class="lt"><span>음료 이름</span></div>
+      <input type="text" id="cupName" maxlength="16">
+
+      <div class="colors">
+        <div>
+          <div class="lt"><span>음료 색상</span><small id="hex1"></small></div>
+          <input type="color" id="drinkColor" value="#9bff91">
+        </div>
+        <div>
+          <div class="lt"><span>글씨 색상</span><small id="hex2"></small></div>
+          <input type="color" id="textColor" value="#FBEFB7">
+        </div>
+      </div>
+
+      <div class="slider">
+        <div class="lt"><span>진하기</span><small id="depthVal"></small></div>
+        <input type="range" id="depth" min="20" max="100" value="85">
+      </div>
+      <div class="slider">
+        <div class="lt"><span>음료 양</span><small id="amountVal"></small></div>
+        <input type="range" id="amount" min="20" max="100" value="85">
+      </div>
+      <div class="slider">
+        <div class="lt"><span>그라데이션</span><small id="gradVal"></small></div>
+        <input type="range" id="grad" min="0" max="100" value="85">
+      </div>
+      <div class="slider">
+        <div class="lt"><span>휘핑크림 높이</span><small id="whipVal"></small></div>
+        <input type="range" id="whipLevel" min="0" max="100" value="85">
+      </div>
+      <div class="slider">
+        <div class="lt"><span>얼음 양</span><small id="iceVal"></small></div>
+        <input type="range" id="iceNum" min="0" max="8" value="5">
+      </div>
+
+      <div class="toppingTitle">토핑</div>
+      <div class="grid">
+        <label class="tp">
+          <input type="checkbox" id="tCherry">
+          <div class="ic"><svg viewBox="0 0 100 100"><path d="M44 46 C44 26 56 14 74 12" stroke="#ec7070" stroke-width="6" fill="none" stroke-linecap="round"/><circle cx="46" cy="68" r="26" fill="#ec7070"/></svg></div>
+          <span>체리</span>
+        </label>
+        <label class="tp">
+          <input type="checkbox" id="tPearl">
+          <div class="ic"><svg viewBox="0 0 100 100"><circle cx="50" cy="52" r="38" fill="#54403f"/><path d="M34 38 A24 24 0 0 1 64 38" stroke="#8a6b6b" stroke-width="6" fill="none" stroke-linecap="round"/><circle cx="68" cy="60" r="4" fill="#8a6b6b"/></svg></div>
+          <span>타피오카 펄</span>
+        </label>
+        <label class="tp">
+          <input type="checkbox" id="tMint">
+          <div class="ic"><svg viewBox="0 0 100 100"><path d="M12 84 C8 44 36 16 86 16 C90 58 62 88 12 84 Z" fill="#7fe6a0"/><path d="M24 76 C42 68 58 52 72 34" stroke="#4fd079" stroke-width="6" fill="none" stroke-linecap="round"/></svg></div>
+          <span>민트 잎</span>
+        </label>
+        <label class="tp">
+          <input type="checkbox" id="tJelly">
+          <div class="ic"><svg viewBox="0 0 100 100"><path d="M24 18 H76 Q82 18 82 24 L88 76 Q88 84 80 84 H20 Q12 84 12 76 L18 24 Q18 18 24 18 Z" fill="#f5f1a0"/></svg></div>
+          <span>젤리</span>
+        </label>
+        <label class="tp">
+          <input type="checkbox" id="tCookie">
+          <div class="ic"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" fill="#c79966"/><rect x="26" y="30" width="9" height="9" fill="#4a2d12"/><rect x="54" y="20" width="6" height="6" fill="#4a2d12"/><rect x="62" y="44" width="10" height="10" fill="#4a2d12"/><rect x="32" y="56" width="9" height="9" fill="#4a2d12"/><rect x="52" y="70" width="8" height="8" fill="#4a2d12"/><rect x="76" y="66" width="5" height="5" fill="#4a2d12"/></svg></div>
+          <span>쿠키 가루</span>
+        </label>
+        <label class="tp">
+          <input type="checkbox" id="tSyrup">
+          <div class="ic"><svg viewBox="0 0 100 100"><path d="M50 6 C62 30 80 44 80 64 C80 82 66 94 50 94 C34 94 20 82 20 64 C20 44 38 30 50 6 Z" fill="#5c3737"/><path d="M36 68 C40 80 56 82 64 72" stroke="#8a5d5d" stroke-width="5" fill="none" stroke-linecap="round"/></svg></div>
+          <span>초코 시럽</span>
+        </label>
+      </div>
+
+      <button class="again" id="again">컵 다시 고르기</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+var iceSpots = [
+  [72, 20, 25], [31, 31, -15], [72, 46, 25], [31, 70, 30],
+  [68, 84, 25], [40, 51, 8], [52, 12, -10], [50, 66, 15]
+];
+var iceList = [];
+var pearlList = [];
+var jellyList = [];
+var crumbList = [];
+var accentNow = '#66c1b3';
+var cupType = 1;
+
+function scatter(count, gap, check){
+  var pts = [];
+  var tries = 0;
+  while(pts.length < count && tries < 900){
+    tries++;
+    var x = 6 + Math.random() * 88;
+    var y = 8 + Math.random() * 88;
+    if(check && !check(x, y)) continue;
+    var ok = true;
+    for(var i = 0; i < pts.length; i++){
+      var dx = (pts[i][0] - x) * 0.65;
+      var dy = pts[i][1] - y;
+      if(dx * dx + dy * dy < gap * gap){ ok = false; break; }
+    }
+    if(ok) pts.push([x, y]);
+  }
+  return pts;
+}
+
+function addPieces(pts, cls, parent, list){
+  for(var i = 0; i < pts.length; i++){
+    var d = document.createElement('div');
+    d.className = cls;
+    d.style.left = pts[i][0] + '%';
+    d.style.top = pts[i][1] + '%';
+    var spin = Math.random() * 360;
+    var size = 0.85 + Math.random() * 0.3;
+    d.style.transform = 'translate(-50%,-50%) rotate(' + spin + 'deg) scale(' + size + ')';
+    parent.appendChild(d);
+    list.push(d);
+  }
+}
+
+for(var i = 0; i < iceSpots.length; i++){
+  var cube = document.createElement('div');
+  cube.className = 'ice';
+  cube.style.left = iceSpots[i][0] + '%';
+  cube.style.top = iceSpots[i][1] + '%';
+  cube.style.transform = 'translate(-50%,-50%) rotate(' + iceSpots[i][2] + 'deg)';
+  stuff.appendChild(cube);
+  iceList.push(cube);
+}
+
+function insideCup(x, y){
+  var m = 5 + y * 0.15;
+  return x > m && x < 100 - m;
+}
+
+addPieces(scatter(10, 4, insideCup), 'pearl', stuff, pearlList);
+addPieces(scatter(10, 7, insideCup), 'jelly', stuff, jellyList);
+addPieces(scatter(14, 9, function(x, y){
+  var a = (x - 50) / 50;
+  var b = (100 - y) / 100;
+  return a * a + b * b <= 0.78;
+}), 'crumb', whip, crumbList);
+
+for(var j = 0; j < crumbList.length; j++){
+  crumbList[j].style.background = j % 2 == 0 ? '#c79966' : '#7a4f2a';
+}
+
+function hexToHsl(hex){
+  var r = parseInt(hex.substr(1, 2), 16) / 255;
+  var g = parseInt(hex.substr(3, 2), 16) / 255;
+  var b = parseInt(hex.substr(5, 2), 16) / 255;
+  var max = Math.max(r, g, b);
+  var min = Math.min(r, g, b);
+  var h = 0;
+  var s = 0;
+  var l = (max + min) / 2;
+  if(max != min){
+    var d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    if(max == r) h = (g - b) / d + (g < b ? 6 : 0);
+    else if(max == g) h = (b - r) / d + 2;
+    else h = (r - g) / d + 4;
+    h = h * 60;
+  }
+  return [h, s, l];
+}
+
+function hsl(h, s, l){
+  return 'hsl(' + Math.round(h) + ',' + Math.round(s * 100) + '%,' + Math.round(l * 100) + '%)';
+}
+
+function fillBars(){
+  var bars = [depth, amount, grad, whipLevel, iceNum];
+  for(var i = 0; i < bars.length; i++){
+    var p = (bars[i].value - bars[i].min) / (bars[i].max - bars[i].min) * 100;
+    bars[i].style.background = 'linear-gradient(to right,' + accentNow + ' ' + p + '%,#d6d6d6 ' + p + '%)';
+  }
+}
+
+function paintTheme(){
+  var c = hexToHsl(drinkColor.value);
+  var h = (c[0] + 50) % 360;
+  var s = c[1] * 0.4;
+  var l = Math.min(c[2] + 0.05, 0.92);
+  var root = document.documentElement.style;
+  accentNow = hsl(h, 0.42, 0.6);
+  root.setProperty('--main', hsl(h, s, l));
+  root.setProperty('--side', hsl(h, s * 0.6, Math.max(l - 0.12, 0.05)));
+  root.setProperty('--accent', accentNow);
+  root.setProperty('--deep', hsl(h, 0.35, 0.38));
+  fillBars();
+}
+
+function showName(){
+  var v = cupName.value.trim();
+  if(v == ''){
+    titletext.textContent = 'Custom\ndrink';
+  } else {
+    titletext.textContent = v.replace(' ', '\n');
+  }
+}
+
+function draw(){
+  var a = grad.value / 100;
+  liquid.style.background = 'linear-gradient(180deg, rgba(255,255,255,' + a + '), ' + drinkColor.value + ')';
+  liquid.style.opacity = depth.value / 100;
+  liquid.style.height = amount.value + '%';
+  stuff.style.height = amount.value + '%';
+
+  var amt = +amount.value;
+  var k = cupType == 3 ? 0.85 : 1;
+  var surf = (1 - k) * 100 + k * amt;
+  var y = 100 - surf;
+  var m = cupType == 2 ? 10.5 * y / 100 : cupType == 3 ? 0.2 * y : 0;
+  var cw = (100 - 2 * m) * 0.94;
+  var w = whipLevel.value * 0.19;
+  var ci = w / k;
+
+  whip.style.bottom = (surf - 0.5) + '%';
+  whip.style.width = cw + '%';
+  whip.style.height = w + '%';
+  creamIn.style.width = cw + '%';
+  creamIn.style.height = (ci * 2.4) + '%';
+  creamIn.style.top = ((100 - amt) - ci * 0.2) + '%';
+  topbox.style.bottom = (surf + w - 1) + '%';
+
+  for(var i = 0; i < iceList.length; i++){
+    iceList[i].style.display = i < iceNum.value ? 'block' : 'none';
+  }
+  for(var j = 0; j < pearlList.length; j++){
+    pearlList[j].style.display = tPearl.checked ? 'block' : 'none';
+  }
+  for(var k = 0; k < jellyList.length; k++){
+    jellyList[k].style.display = tJelly.checked ? 'block' : 'none';
+  }
+  for(var m = 0; m < crumbList.length; m++){
+    crumbList[m].style.display = (tCookie.checked && w > 0) ? 'block' : 'none';
+  }
+  syrup.style.display = (tSyrup.checked && w > 0) ? 'block' : 'none';
+  cherry.style.display = tCherry.checked ? 'block' : 'none';
+  mint.style.display = tMint.checked ? 'block' : 'none';
+
+  titletext.style.color = textColor.value;
+  hex1.textContent = drinkColor.value.toUpperCase();
+  hex2.textContent = textColor.value.toUpperCase();
+  depthVal.textContent = depth.value + '%';
+  amountVal.textContent = amount.value + '%';
+  gradVal.textContent = grad.value + '%';
+  whipVal.textContent = whipLevel.value + '%';
+  iceVal.textContent = iceNum.value + '개';
+  fillBars();
+}
+
+function chooseCup(n){
+  cupwrap.className = 'wrap s' + n;
+  cupType = n;
+  cupwrap.classList.add('show');
+  draw();
+  step1.hidden = true;
+  step2.hidden = false;
+}
+
+pick1.onclick = function(){ chooseCup(1); }
+pick2.onclick = function(){ chooseCup(2); }
+pick3.onclick = function(){ chooseCup(3); }
+again.onclick = function(){
+  cupwrap.classList.remove('show');
+  step2.hidden = true;
+  step1.hidden = false;
+}
+
+cupName.oninput = showName;
+drinkColor.oninput = function(){
+  paintTheme();
+  draw();
+}
+textColor.oninput = draw;
+depth.oninput = draw;
+amount.oninput = draw;
+grad.oninput = draw;
+whipLevel.oninput = draw;
+iceNum.oninput = draw;
+tCherry.onchange = draw;
+tPearl.onchange = draw;
+tMint.onchange = draw;
+tJelly.onchange = draw;
+tCookie.onchange = draw;
+tSyrup.onchange = draw;
+
+showName();
+paintTheme();
+draw();
+</script>
+</body>
+</html>
